@@ -22,7 +22,7 @@ jobs:
       - name: Configurar Docker
         uses: docker/setup-buildx-action@v2
 
-      # 3️⃣ Subir PufferPanel com admin automático
+      # 3️⃣ Subir PufferPanel
       - name: Subir PufferPanel
         run: |
           sudo mkdir -p /var/lib/pufferpanel
@@ -33,13 +33,20 @@ jobs:
             -v pufferpanel-config:/etc/pufferpanel \
             -v /var/lib/pufferpanel:/var/lib/pufferpanel \
             -v /var/run/docker.sock:/var/run/docker.sock \
-            -e PUFFERPANEL_ADMIN_USER=root \
-            -e PUFFERPANEL_ADMIN_PASS=nicolasmurilo19 \
-            -e PUFFERPANEL_ADMIN_EMAIL=murilolevigamer@gmail.com \
             --restart=on-failure \
             pufferpanel/pufferpanel:latest
 
-      # 4️⃣ Instalar Ngrok
+      # 4️⃣ Criar usuário admin após inicialização do container
+      - name: Criar usuário admin
+        run: |
+          echo "Esperando PufferPanel inicializar..."
+          sleep 30   # aguarda container iniciar
+          docker exec pufferpanel /pufferpanel/pufferpanel user add \
+            --username root \
+            --password root \
+            --email murilolevigamer@gmail.com || true
+
+      # 5️⃣ Instalar Ngrok
       - name: Instalar Ngrok
         run: |
           curl -sSL https://ngrok-agent.s3.amazonaws.com/ngrok.asc \
@@ -49,12 +56,12 @@ jobs:
           sudo apt update
           sudo apt install -y ngrok
 
-      # 5️⃣ Configurar token Ngrok
+      # 6️⃣ Configurar token Ngrok
       - name: Configurar Ngrok
         run: |
           ngrok config add-authtoken 32HyO7x8z5jGhLdUR2ts0DVrD3K_2dUKsZr5rseHaRAXxz5Sf
 
-      # 6️⃣ Expor painel PufferPanel via Ngrok
+      # 7️⃣ Expor painel PufferPanel via Ngrok
       - name: Expor PufferPanel na web com Ngrok
         run: |
           nohup ngrok http 8080 --log=stdout > ngrok.log 2>&1 &
@@ -62,6 +69,6 @@ jobs:
           echo "URL do PufferPanel:"
           cat ngrok.log | grep -o "https://[a-z0-9-]*\.ngrok-free\.app" | head -n 1
 
-      # 7️⃣ Manter job rodando (24/7 temporário)
+      # 8️⃣ Manter job ativo (24/7 temporário)
       - name: Manter job ativo
         run: tail -f /dev/null
