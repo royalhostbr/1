@@ -1,0 +1,42 @@
+name: VPS SSHX 24/7 + PufferPanel
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  root_apolinario:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Iniciando VPS temporária (sshx.io)
+        run: curl -sSf https://sshx.io/get | sh -s run &
+
+      - name: Instalar dependências
+        run: |
+          sudo apt update -y
+          sudo apt upgrade -y
+          sudo apt install -y docker.io
+
+      - name: Subir PufferPanel
+        run: |
+          sudo mkdir -p /var/lib/pufferpanel
+          sudo docker volume create pufferpanel-config
+          sudo docker create --name pufferpanel \
+            -p 8080:8080 \
+            -p 5657:5657 \
+            -v pufferpanel-config:/etc/pufferpanel \
+            -v /var/lib/pufferpanel:/var/lib/pufferpanel \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            --restart=on-failure \
+            pufferpanel/pufferpanel:latest
+          sudo docker start pufferpanel
+
+      - name: Criar usuário admin no PufferPanel
+        run: |
+          sudo docker exec -it pufferpanel /pufferpanel/pufferpanel user add || true
