@@ -36,14 +36,20 @@ jobs:
             --restart=on-failure \
             pufferpanel/pufferpanel:latest
 
-      # 4️⃣ Esperar inicialização completa do PufferPanel
+      # 4️⃣ Esperar inicialização completa do PufferPanel (até 90s)
       - name: Esperar PufferPanel iniciar
         run: |
-          echo "Aguardando PufferPanel iniciar..."
-          until docker logs pufferpanel 2>&1 | grep -q "PufferPanel Started"; do
+          echo "Aguardando PufferPanel iniciar (até 90s)..."
+          for i in {1..18}; do
+            if docker logs pufferpanel 2>&1 | grep -q "Started"; then
+              echo "✅ PufferPanel iniciado!"
+              exit 0
+            fi
             sleep 5
           done
-          echo "PufferPanel iniciado!"
+          echo "⚠️ Timeout: PufferPanel pode não ter iniciado"
+          echo "🔎 Últimos logs do container:"
+          docker logs pufferpanel | tail -n 50
 
       # 5️⃣ Criar usuário admin
       - name: Criar usuário admin
@@ -74,7 +80,7 @@ jobs:
         run: |
           nohup ngrok http 8080 --log=stdout > ngrok.log 2>&1 &
           sleep 5
-          echo "URL do PufferPanel:"
+          echo "🌍 URL do PufferPanel:"
           cat ngrok.log | grep -o "https://[a-z0-9-]*\.ngrok-free\.app" | head -n 1
 
       # 9️⃣ Manter job ativo (24/7 temporário)
