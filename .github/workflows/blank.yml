@@ -36,15 +36,16 @@ jobs:
             --restart=on-failure \
             pufferpanel/pufferpanel:latest
 
-      # 4️⃣ Criar usuário admin após inicialização do container
+      # 4️⃣ Criar usuário admin (flags corretas)
       - name: Criar usuário admin
         run: |
           echo "Esperando PufferPanel inicializar..."
           sleep 30   # aguarda container iniciar
           docker exec pufferpanel /pufferpanel/pufferpanel user add \
-            --username root \
+            --name root \
             --password root \
-            --email murilolevigamer@gmail.com || true
+            --email murilolevigamer@gmail.com \
+            --admin || true
 
       # 5️⃣ Instalar Ngrok
       - name: Instalar Ngrok
