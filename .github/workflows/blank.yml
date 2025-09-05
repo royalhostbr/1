@@ -36,18 +36,25 @@ jobs:
             --restart=on-failure \
             pufferpanel/pufferpanel:latest
 
-      # 4️⃣ Criar usuário admin (flags corretas)
+      # 4️⃣ Esperar inicialização completa do PufferPanel
+      - name: Esperar PufferPanel iniciar
+        run: |
+          echo "Aguardando PufferPanel iniciar..."
+          until docker logs pufferpanel 2>&1 | grep -q "PufferPanel Started"; do
+            sleep 5
+          done
+          echo "PufferPanel iniciado!"
+
+      # 5️⃣ Criar usuário admin
       - name: Criar usuário admin
         run: |
-          echo "Esperando PufferPanel inicializar..."
-          sleep 30   # aguarda container iniciar
           docker exec pufferpanel /pufferpanel/pufferpanel user add \
-            --name root \
-            --password root \
+            --name adminroot \
+            --password root123 \
             --email murilolevigamer@gmail.com \
             --admin || true
 
-      # 5️⃣ Instalar Ngrok
+      # 6️⃣ Instalar Ngrok
       - name: Instalar Ngrok
         run: |
           curl -sSL https://ngrok-agent.s3.amazonaws.com/ngrok.asc \
@@ -57,12 +64,12 @@ jobs:
           sudo apt update
           sudo apt install -y ngrok
 
-      # 6️⃣ Configurar token Ngrok
+      # 7️⃣ Configurar token Ngrok
       - name: Configurar Ngrok
         run: |
           ngrok config add-authtoken 32HyO7x8z5jGhLdUR2ts0DVrD3K_2dUKsZr5rseHaRAXxz5Sf
 
-      # 7️⃣ Expor painel PufferPanel via Ngrok
+      # 8️⃣ Expor painel PufferPanel via Ngrok
       - name: Expor PufferPanel na web com Ngrok
         run: |
           nohup ngrok http 8080 --log=stdout > ngrok.log 2>&1 &
@@ -70,6 +77,6 @@ jobs:
           echo "URL do PufferPanel:"
           cat ngrok.log | grep -o "https://[a-z0-9-]*\.ngrok-free\.app" | head -n 1
 
-      # 8️⃣ Manter job ativo (24/7 temporário)
+      # 9️⃣ Manter job ativo (24/7 temporário)
       - name: Manter job ativo
         run: tail -f /dev/null
