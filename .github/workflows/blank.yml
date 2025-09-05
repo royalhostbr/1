@@ -1,4 +1,4 @@
-name: VPS SSHX 24/7 + PufferPanel
+name: VPS SSHX 24/7 + PufferPanel + Ngrok
 
 on:
   workflow_dispatch:
@@ -36,4 +36,26 @@ jobs:
 
       - name: Criar usuário admin no PufferPanel
         run: |
-          docker exec -it pufferpanel /pufferpanel/pufferpanel user add || true
+          docker exec pufferpanel /pufferpanel/pufferpanel user add --username admin --password admin123 --email admin@example.com || true
+
+      - name: Instalar Ngrok
+        run: |
+          curl -sSL https://ngrok-agent.s3.amazonaws.com/ngrok.asc \
+           | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null
+          echo "deb https://ngrok-agent.s3.amazonaws.com bookworm main" \
+           | sudo tee /etc/apt/sources.list.d/ngrok.list
+          sudo apt update
+          sudo apt install -y ngrok
+
+      - name: Configurar Ngrok
+        run: |
+          ngrok config add-authtoken 32HyO7x8z5jGhLdUR2ts0DVrD3K_2dUKsZr5rseHaRAXxz5Sf
+
+      - name: Expor PufferPanel na web com Ngrok
+        run: |
+          nohup ngrok http 8080 --log=stdout > ngrok.log 2>&1 &
+          sleep 5
+          cat ngrok.log | grep -o "https://[a-z0-9-]*\.ngrok-free\.app" | head -n 1
+
+      - name: Manter job rodando
+        run: tail -f /dev/null
