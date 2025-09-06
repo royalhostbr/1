@@ -1,4 +1,4 @@
-name: VPS SSHX 24/7 + PufferPanel + Ngrok
+name: VPS SSHX 24/7 + PufferPanel + Ngrok Feito por root@apolinario
 
 on:
   workflow_dispatch:
@@ -57,7 +57,7 @@ jobs:
           docker exec pufferpanel /pufferpanel/pufferpanel user add \
             --name adminroot \
             --password root123 \
-            --email admin@gmail.com \
+            --email seugmail@gmail.com \
             --admin || true
 
       # 6️⃣ Instalar Ngrok
@@ -73,7 +73,7 @@ jobs:
       # 7️⃣ Configurar token Ngrok
       - name: Configurar Ngrok
         run: |
-          ngrok config add-authtoken 32HyO7x8z5jGhLdUR2ts0DVrD3K_2dUKsZr5rseHaRAXxz5Sf
+          ngrok config add-authtoken SEU-TOKEN-NGROK
 
       # 8️⃣ Expor painel PufferPanel via Ngrok
       - name: Expor PufferPanel na web com Ngrok
