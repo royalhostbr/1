@@ -1,14 +1,16 @@
-name: VPS SSHX 24/7 + PufferPanel + Ngrok Feito por root@apolinario
+name: VPS SSHX + PufferPanel + Ngrok (renovável)
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '0 * * * *' # Executa todo início de hora
   push:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
 
 jobs:
-  root_apolinario:
+  vps_job:
     runs-on: ubuntu-latest
 
     steps:
@@ -36,7 +38,7 @@ jobs:
             --restart=on-failure \
             pufferpanel/pufferpanel:latest
 
-      # 4️⃣ Esperar inicialização completa do PufferPanel (até 90s)
+      # 4️⃣ Esperar inicialização completa do PufferPanel
       - name: Esperar PufferPanel iniciar
         run: |
           echo "Aguardando PufferPanel iniciar (até 90s)..."
@@ -57,7 +59,7 @@ jobs:
           docker exec pufferpanel /pufferpanel/pufferpanel user add \
             --name adminroot \
             --password root123 \
-            --email murilolevigamer@gmail.com \
+            --email seugmail@example.com \
             --admin || true
 
       # 6️⃣ Instalar Ngrok
@@ -70,10 +72,9 @@ jobs:
           sudo apt update
           sudo apt install -y ngrok
 
-      # 7️⃣ Configurar token Ngrok
+      # 7️⃣ Configurar token Ngrok (use secrets!)
       - name: Configurar Ngrok
-        run: |
-          ngrok config add-authtoken 2ykhz9WSwDPjjvNhlF2cOQ7iNEC_6ufv1xzpCjR8dpnftuC6Z
+        run: ngrok config add-authtoken SEUTOKENNGROK
 
       # 8️⃣ Expor painel PufferPanel via Ngrok
       - name: Expor PufferPanel na web com Ngrok
@@ -82,7 +83,3 @@ jobs:
           sleep 5
           echo "🌍 URL do PufferPanel:"
           cat ngrok.log | grep -o "https://[a-z0-9-]*\.ngrok-free\.app" | head -n 1
-
-      # 9️⃣ Manter job ativo (24/7 temporário)
-      - name: Manter job ativo
-        run: tail -f /dev/null
