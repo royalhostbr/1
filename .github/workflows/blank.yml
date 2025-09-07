@@ -1,4 +1,4 @@
-name: VPS SSHX + PufferPanel + Ngrok (renovável)
+name: VPS SSHX + PufferPanel + Ngrok
 
 on:
   workflow_dispatch:
@@ -10,7 +10,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  vps_job:
+  root_apolinario:
     runs-on: ubuntu-latest
 
     steps:
