@@ -57,7 +57,7 @@ jobs:
           docker exec pufferpanel /pufferpanel/pufferpanel user add \
             --name adminroot \
             --password root123 \
-            --email seugmail@gmail.com \
+            --email murilolevigamer@gmail.com \
             --admin || true
 
       # 6️⃣ Instalar Ngrok
@@ -73,7 +73,7 @@ jobs:
       # 7️⃣ Configurar token Ngrok
       - name: Configurar Ngrok
         run: |
-          ngrok config add-authtoken SEU-TOKEN-NGROK
+          ngrok config add-authtoken 2ykhz9WSwDPjjvNhlF2cOQ7iNEC_6ufv1xzpCjR8dpnftuC6Z
 
       # 8️⃣ Expor painel PufferPanel via Ngrok
       - name: Expor PufferPanel na web com Ngrok
